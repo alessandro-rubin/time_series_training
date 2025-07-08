@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-
 # Perform online inference with a trained autoencoder model on time series data
 def online_inference(model, X, scaler, window_size):
     model.eval()  # set model to evaluation mode
@@ -21,3 +20,4 @@ def online_inference(model, X, scaler, window_size):
             score = np.mean((x_rec - window_scaled)**2)  # compute reconstruction error
             scores.append(score)
     return np.array(scores)
+

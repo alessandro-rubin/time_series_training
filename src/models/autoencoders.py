@@ -61,3 +61,5 @@ class FlattenedAutoencoder(nn.Module):
         x = self.decoder(x)
         x = x.view(x.size(0), self.t, self.d)  # reshape back to (batch_size, d, t)
         return x
+    
+
