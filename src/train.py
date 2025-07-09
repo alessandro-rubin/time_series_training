@@ -42,7 +42,7 @@ def train_autoencoder(model, X_train:torch.Tensor, epochs=50, lr=1e-3,run_name:N
         mlflow.pytorch.log_model(model, name= "model",input_example=X_train[0].unsqueeze(0).numpy())
 
 
-def train_predictor(model, X_train, Y_train, epochs=50, lr=1e-3, run_name="predictor"):
+def train_predictor(model:nn.Module, X_train:torch.Tensor, Y_train:torch.Tensor, epochs=50, lr=1e-3, run_name="predictor"):
     mlflow.set_experiment("Anomaly Detection Experiments - predictors")
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
@@ -74,4 +74,4 @@ def train_predictor(model, X_train, Y_train, epochs=50, lr=1e-3, run_name="predi
             mlflow.log_metric("train_loss", total_loss / len(loader), step=epoch)
             print(f"Epoch {epoch+1}: Loss = {total_loss / len(loader):.4f}")
 
-        mlflow.pytorch.log_model(model, "model")
+        mlflow.pytorch.log_model(model, "model",input_example=X_train[0].unsqueeze(0).numpy())

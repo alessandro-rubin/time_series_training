@@ -17,3 +17,20 @@ def sliding_windows(X, window_size):
 
 
 
+def generate_synthetic_data_for_seq2one(T=1000, D=3,inject_anomaly=False):
+    t = np.arange(T)
+    X = np.stack([np.sin(0.01 * t * (d+1)) + 0.05 * np.random.randn(T) for d in range(D)], axis=1)
+    y = np.zeros(T)
+    if inject_anomaly:
+        X[300:305] += 3 * np.random.randn(5, D)
+        X[700] += 6
+        y[300:305] = 1
+        y[700] = 1
+    return X, y
+
+def make_sequence_to_one(X, window_size):
+    X_in, Y_out = [], []
+    for t in range(window_size, len(X)):
+        X_in.append(X[t-window_size:t])
+        Y_out.append(X[t])
+    return np.array(X_in), np.array(Y_out)

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class SequenceToOneLSTM(pl.LightningModule):
     def __init__(self, input_dim, hidden_dim, lr=1e-3):
         super().__init__()
-        self.save_hyperparameters(lr)
+        self.save_hyperparameters()
         self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
         self.fc = nn.Linear(hidden_dim, input_dim)
 
@@ -23,3 +23,6 @@ class SequenceToOneLSTM(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams['lr'])
+
+
+
