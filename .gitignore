@@ -193,3 +193,9 @@ pyrightconfig.json
 .ionide
 
 mlruns/
+lightning_logs/
+test.ipynb
+
+temp/*
+
+!temp/.gitkeep
