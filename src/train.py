@@ -7,7 +7,7 @@ import mlflow.pytorch
 import datetime as dt
 from torch.utils.data import TensorDataset
 import torchinfo
-
+import os
 
 # Train an autoencoder model on the provided training data
 def train_autoencoder(model, X_train:torch.Tensor, epochs=50, lr=1e-3,run_name:None|str =None):
@@ -41,10 +41,17 @@ def train_autoencoder(model, X_train:torch.Tensor, epochs=50, lr=1e-3,run_name:N
             avg_loss=total_loss/len(X_train)
             mlflow.log_metric("loss", avg_loss, step=epoch)
             print(f"Epoch {epoch+1}: Loss = {avg_loss:.4f}")
-        with open("model_summary.txt", "w", encoding="utf-8") as f:
-            f.write(str(torchinfo.summary(model, input_size=(1, 40,8))))
-        mlflow.log_artifact("temp/model_summary.txt")
-        mlflow.pytorch.log_model(model, name= "autoencoder",input_example=X_train[0].unsqueeze(0).numpy())
+        try:
+            with open("temp/model_summary.txt", "w", encoding="utf-8") as f:
+                f.write(str(torchinfo.summary(model, input_size=X_train[0:1].shape)))
+                mlflow.log_artifact("temp/model_summary.txt")
+            mlflow.pytorch.log_model(model, name="autoencoder", input_example=X_train[0].unsqueeze(0).numpy(), extra_files=["temp/model_summary.txt"])
+        finally:
+            try:
+                os.remove("temp/model_summary.txt")
+            except FileNotFoundError:
+                pass
+            
 
 
 def train_predictor(model:nn.Module, X_train:torch.Tensor, Y_train:torch.Tensor, epochs=50, lr=1e-3, run_name="predictor"):
@@ -83,4 +90,4 @@ def train_predictor(model:nn.Module, X_train:torch.Tensor, Y_train:torch.Tensor,
             output:torch.Tensor = model(torch.tensor(sample_input))
             sample_output = output.numpy()
             signature = mlflow.models.infer_signature(sample_input, sample_output)
-        mlflow.pytorch.log_model(model, "model",signature=signature)
+        mlflow.pytorch.log_model(model, "predictor",signature=signature)
