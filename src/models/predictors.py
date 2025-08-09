@@ -25,4 +25,27 @@ class SequenceToOneLSTM(pl.LightningModule):
         return torch.optim.Adam(self.parameters(), lr=self.hparams['lr'])
 
 
+class Predictor(nn.Module):
+    def __init__(self, input_dim, n_timesteps, output_dim=1, fc_layers=[64, 32]):
+        super().__init__()
+        self.input_dim = input_dim
+        self.n_timesteps = n_timesteps
+        #self.hidden_dim = hidden_dim
+        #self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
 
+        layers = []
+        self.flat_input_dim = input_dim * n_timesteps
+        prev_dim = self.flat_input_dim
+        for dim in fc_layers:
+            layers.append(nn.Linear(prev_dim, dim))
+            layers.append(nn.ReLU())
+            prev_dim = dim
+        layers.append(nn.Linear(prev_dim, output_dim))
+        self.fc = nn.Sequential(*layers)
+
+    def forward(self, x:torch.Tensor):
+        # x: [batch_size, n_timesteps, input_dim]
+        #_, (h_n, _) = self.lstm(x)
+        x = x.view(x.size(0), -1)  # flatten to (batch_size, d * t)
+        out = self.fc(x)  # [batch_size, output_dim]
+        return out

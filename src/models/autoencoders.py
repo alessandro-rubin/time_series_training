@@ -40,7 +40,7 @@ class CNNAutoencoder(nn.Module):
 
 class FlattenedAutoencoder(nn.Module):
     def __init__(self, d, t, n1):
-        super(FlattenedAutoencoder, self).__init__()
+        super().__init__()
         self.d = d
         self.t = t
         self.n = d * t
