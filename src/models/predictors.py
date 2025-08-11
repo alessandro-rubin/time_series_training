@@ -3,16 +3,26 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class SequenceToOneLSTM(pl.LightningModule):
-    def __init__(self, input_dim, hidden_dim, lr=1e-3):
+class SequenceToOneLSTM(nn.Module):
+    def __init__(self, input_dim, hidden_dim,output_dim=1):
         super().__init__()
-        self.save_hyperparameters()
         self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
-        self.fc = nn.Linear(hidden_dim, input_dim)
+        fc_layers=[nn.Linear(hidden_dim, hidden_dim),nn.ReLU(),nn.Linear(hidden_dim, output_dim)]
+        self.fc = nn.Sequential(*fc_layers)
+
+    def forward(self, x):  # x: [B x T x D]
+        _, (h_n, _) = self.lstm(x)   # h_n: [1 x B x H]
+        return self.fc(h_n.squeeze(0))
+
+class LitSequenceToOne(pl.LightningModule):
+    def __init__(self, model, lr=1e-3):
+        super().__init__()
+        self.model = model
+        self.lr = lr
+        self.save_hyperparameters('lr')
 
     def forward(self, x):  # x: [B, T, D]
-        _, (h_n, _) = self.lstm(x)
-        return self.fc(h_n.squeeze(0))  # [B, D]
+        return self.model(x)  # [B, D]
 
     def training_step(self, batch):
         x, y = batch
